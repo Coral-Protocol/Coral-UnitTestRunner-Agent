@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from anyio import ClosedResourceError
 import urllib.parse
 from typing import Dict, List
-from langchain_groq import ChatGroq
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
