@@ -23,7 +23,7 @@ load_dotenv()
 
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 6,
+    "waitForAgents": 1,
     "agentId": "unit_test_runner_agent",
     "agentDescription": """I am a `unit_test_runner_agent`, responsible for running relevant pytest tests based on code diffs. 
                            You should let me know the local root path of the project and the code diffs of the PR."""
