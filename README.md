@@ -125,9 +125,10 @@ uv run 3-langchain-UnitTestRunnerAgent.py
 
 Input:
 
+Send message to the interface agent:
+
 ```bash
-#Send message to the interface agent:
-Please execute the unit test for the '2' PR in repo 'renxinxing123/camel-software-testing'.
+Could you please execute the unit test for changed file 'semantic_scholar_toolkit.py' in the local path 'camel-software-testing'
 ```
 
 Output:
