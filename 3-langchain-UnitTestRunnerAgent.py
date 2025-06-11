@@ -101,31 +101,38 @@ def read_project_files(root_path: str, relative_paths: List[str]) -> Dict[str, s
     return contents
 
 @tool
-def run_test(project_root: str, relative_test_path: str) -> dict:
+def run_test(relative_test_path: str, project_root: str = ".") -> dict:
     """
     Run all pytest unit tests in a test file within a project directory.
 
     Args:
-        project_root (str): Absolute path to the project root directory.
-        relative_test_path (str): Path to the test file relative to the project root (e.g., 'tests/test_calculator.py').
+        relative_test_path (str): Path to the test file, either relative to the project root or as an absolute path.
+        project_root (str, optional): Path to the project root directory (absolute or relative). Defaults to the current directory '.'.
 
     Returns:
-        dict: Contains 'result' message, 'output' (full pytest output), and 'status' (True if all tests passed).
+        dict: Contains 'result' (summary message), 'output' (full pytest output), and 'status' (True if all tests passed).
     """
-    if not os.path.isabs(project_root):
-        raise ValueError("project_root must be an absolute path.")
-
-    abs_test_path = os.path.join(project_root, relative_test_path)
+    # Convert project_root to absolute path
+    abs_project_root = os.path.abspath(project_root)
+    
+    # Support absolute or relative test file path
+    if os.path.isabs(relative_test_path):
+        abs_test_path = relative_test_path
+    else:
+        abs_test_path = os.path.join(abs_project_root, relative_test_path)
 
     if not os.path.exists(abs_test_path):
         raise FileNotFoundError(f"Test file does not exist: {abs_test_path}")
 
-    command = ["pytest", relative_test_path]
-    env = os.environ.copy()
-    env["PYTHONPATH"] = project_root
+    # Calculate relative test path for pytest execution
+    rel_test_path_for_pytest = os.path.relpath(abs_test_path, abs_project_root)
 
-    print(f"Running pytest on: {relative_test_path}")
-    result = subprocess.run(command, cwd=project_root, env=env, capture_output=True, text=True)
+    command = ["pytest", rel_test_path_for_pytest]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = abs_project_root
+
+    print(f"Running pytest on: {rel_test_path_for_pytest}")
+    result = subprocess.run(command, cwd=abs_project_root, env=env, capture_output=True, text=True)
 
     print("--- Pytest Output ---")
     print(result.stdout)
@@ -138,6 +145,7 @@ def run_test(project_root: str, relative_test_path: str) -> dict:
         "output": result.stdout,
         "status": passed
     }
+
 
 
 async def create_unit_test_runner_agent(client, tools):
