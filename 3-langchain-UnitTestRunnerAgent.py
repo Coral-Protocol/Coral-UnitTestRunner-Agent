@@ -154,8 +154,8 @@ async def create_unit_test_runner_agent(client, tools):
 
         1. Use `wait_for_mentions(timeoutMs=60000)` to wait for instructions from other agents.
         2. When a mention is received, record the `threadId` and `senderId`.
-        3. Check if the message contains a project root and a list of filenames with code diffs.
-        4. Extract the `project_root` and the list of `(filename, diff snippet)` pairs, call `send_message(senderId=..., mentions=[senderId], threadId=..)` if any information is missing.
+        3. Check if the message contains a project root and a list of changed filenames.
+        4. Extract the `project_root` and the list of `changed filenames`, call `send_message(senderId=..., mentions=[senderId], threadId=..)` if any information is missing.
         5. Call `list_project_files(project_root)` to get all files in the project.
         6. Filter out test files related to the list of filenames with code diffs.
         7. Call `read_project_files(project_root, test_files)` to read their content.
@@ -194,24 +194,39 @@ async def main():
     retries = max_retries
 
     while retries > 0:
+        client = MultiServerMCPClient(
+            connections={
+                "coral": {
+                    "transport": "sse",
+                    "url": MCP_SERVER_URL,
+                    "timeout": 300,
+                    "sse_read_timeout": 300,
+                }
+            }
+        )
         try:
-            async with MultiServerMCPClient(connections={
-                "coral": {"transport": "sse", "url": MCP_SERVER_URL, "timeout": 300, "sse_read_timeout": 300}
-            }) as client:
-                tools = client.get_tools() + [run_test, list_project_files, read_project_files]
-                logger.info(f"Connected to MCP server. Tools:\n{get_tools_description(tools)}")
-                retries = max_retries  # Reset retries on successful connection
-                await (await create_unit_test_runner_agent(client, tools)).ainvoke({})
+            logger.info(f"Connecting to MCP server at {MCP_SERVER_URL}")
+            tools = await client.get_tools()
+            tools += [run_test, list_project_files, read_project_files]
+            logger.info(f"Tools loaded:\n{get_tools_description(tools)}")
+
+            agent = await create_unit_test_runner_agent(client, tools)
+            await agent.ainvoke({})
+
+            retries = max_retries
+            break
+
         except ClosedResourceError as e:
             retries -= 1
-            logger.error(f"Connection closed: {str(e)}. Retries left: {retries}. Retrying in {retry_delay} seconds...")
+            logger.error(f"Connection closed: {e}. Retries left: {retries}. Waiting {retry_delay}s before retry.")
             if retries == 0:
                 logger.error("Max retries reached. Exiting.")
                 break
             await asyncio.sleep(retry_delay)
+
         except Exception as e:
             retries -= 1
-            logger.error(f"Unexpected error: {str(e)}. Retries left: {retries}. Retrying in {retry_delay} seconds...")
+            logger.error(f"Unexpected error: {e}. Retries left: {retries}. Waiting {retry_delay}s before retry.")
             if retries == 0:
                 logger.error("Max retries reached. Exiting.")
                 break
@@ -219,3 +234,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
