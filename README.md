@@ -1,117 +1,114 @@
-## Responsibility
+## [Coral UnitTestRunner Agent](https://github.com/Coral-Protocol/Coral-UnitTestRunner-Agent)
 
-Unit test runner agent can help you automatically run the relevant pytest test files based on code changes in your repository, just provide the code diffs of a commit and the local project path, and the agent will execute the appropriate tests and return the results.
+The UnitTestRunner Agent can help you automatically run the relevant pytest test files based on code changes in your repository. Just provide the code diffs of a commit and the local project path, and the agent will execute the appropriate tests and return the results.
+
+## Responsibility
+The UnitTestRunner Agent automates running relevant unit tests for changed files in your repository, streamlining the testing process after code changes.
 
 ## Details
-
-* Framework: LangChain
-* Tools used: List Files Tool (Local), List File Tool (Local), CLI Tool, Coral Server Tools
-* AI model: OpenAI GPT-4.1
-* Date added: 02/05/25
-* Licence: MIT
+- **Framework**: LangChain
+- **Tools used**: List Files Tool (Local), List File Tool (Local), CLI Tool, Coral Server Tools
+- **AI model**: OpenAI GPT-4.1
+- **Date added**: 02/05/25
+- **License**: MIT
 
 ## Use the Agent
 
-### 1.Clone & Install Dependencies
-
-Run [Interface Agent](https://github.com/Coral-Protocol/Coral-Interface-Agent)
+### 1. Run Coral Server
 <details>
 
-
-If you are trying to run Open Deep Research agent and require an input, you can either create your agent which communicates on the coral server or run and register the Interface Agent on the Coral Server. In a new terminal clone the repository:
-
+Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system. In a new terminal, clone the repository:
 
 ```bash
-git clone https://github.com/Coral-Protocol/Coral-Interface-Agent.git
-```
-Navigate to the project directory:
-```bash
-cd Coral-Interface-Agent
-```
+# Clone the Coral Server repository
+git clone https://github.com/Coral-Protocol/coral-server.git
 
-Install `uv`:
-```bash
-pip install uv
-```
-Install dependencies from `pyproject.toml` using `uv`:
-```bash
-uv sync
-```
+# Navigate to the project directory
+cd coral-server
 
-Configure API Key
-```bash
-export OPENAI_API_KEY=
+# Run the server
+./gradlew run
 ```
-
-Run the agent using `uv`:
-```bash
-uv run python 0-langchain-interface.py
-```
-
 </details>
 
-Agent Installation
-
+### 2. Run [Interface Agent](https://github.com/Coral-Protocol/Coral-Interface-Agent)
 <details>
 
-Clone the repository:
-```bash
-git clone https://github.com/Coral-Protocol/Coral-UnitTestRunner-Agent.git
-```
+The Interface Agent is required to interact with the UnitTestRunner Agent. In a new terminal, clone the repository:
 
-Navigate to the project directory:
 ```bash
-cd Coral-UnitTestRunner-Agent
-```
+# Clone the Interface Agent repository
+git clone https://github.com/Coral-Protocol/Coral-Interface-Agent.git
 
-Install `uv`:
-```bash
+# Navigate to the project directory
+cd Coral-Interface-Agent
+
+# Install `uv`:
 pip install uv
-```
 
-Install dependencies from `pyproject.toml` using `uv`:
+# Install dependencies from `pyproject.toml` using `uv`:
+uv sync
+
+# Run the agent using `uv`:
+uv run python 0-langchain-interface.py
+```
+</details>
+
+### 3. Run UnitTestRunner Agent
+<details>
+
+In a new terminal, clone the repository:
+
 ```bash
+# Clone the UnitTestRunner Agent repository
+git clone https://github.com/Coral-Protocol/Coral-UnitTestRunner-Agent.git
+
+# Navigate to the project directory
+cd Coral-UnitTestRunner-Agent
+
+# Install `uv`:
+pip install uv
+
+# Install dependencies from `pyproject.toml` using `uv`:
 uv sync
 ```
-
 This command will read the `pyproject.toml` file and install all specified dependencies in a virtual environment managed by `uv`.
 
-Copy the client sse.py from utils to mcp package
+Copy the client sse.py from utils to mcp package (Linux/Mac):
 ```bash
 cp -r utils/sse.py .venv/lib/python3.10/site-packages/mcp/client/sse.py
 ```
-
-OR Copy this for windows
+OR for Windows:
 ```bash
 cp -r utils\sse.py .venv\Lib\site-packages\mcp\client\sse.py
 ```
-
 </details>
 
-### 2. Configure Environment Variables
-
+### 4. Configure Environment Variables
 <details>
 
-Copy the example file and update it with your credentials:
+Get the API Key:
+- [OpenAI API Key](https://platform.openai.com/api-keys)
 
+Create a .env file in the project root:
 ```bash
-cp .env.example .env
+cp -r .env.example .env
 ```
 
+Add your API keys and any other required environment variables to the .env file.
+
 Required environment variables:
+- `OPENAI_API_KEY`
 
-* `OPENAI_API_KEY`
 
-* **OPENAI_API_KEY:**
-  Sign up at [platform.openai.com](https://platform.openai.com/), go to “API Keys” under your account, and click “Create new secret key.”
+
 
 </details>
 
-### 3. Run Agent
-
+### 5. Run Agent
 <details>
 
-Unit test runner agent is supposed to receive local repo path and changed files as inputs, so please also run [Git clone agent](https://github.com/Coral-Protocol/Coral-GitClone-Agent) and [Code diffs review agent](https://github.com/Coral-Protocol/Coral-CodeDiffReview-Agent) to get proper inputs.
+UnitTestRunner Agent is supposed to receive local repo path and changed files as inputs, so please also run [GitClone Agent](https://github.com/Coral-Protocol/Coral-GitClone-Agent) and [CodeDiffReview Agent](https://github.com/Coral-Protocol/Coral-CodeDiffReview-Agent) to get proper inputs.
 
 Run the agent using `uv`:
 ```bash
@@ -119,21 +116,14 @@ uv run 3-langchain-UnitTestRunnerAgent.py
 ```
 </details>
 
-### 4. Example
-
+### 6. Example
 <details>
 
-Input:
-
-Send message to the interface agent:
-
 ```bash
+# Input:
 Could you please execute the unit test for changed file 'semantic_scholar_toolkit.py' in the local path 'camel-software-testing'
-```
 
-Output:
-
-```bash
+# Output:
 Relevant test file: test/toolkits/test_semantic_scholar_functions.py
 
 **Test Results:**
@@ -160,16 +150,16 @@ test/toolkits/test_semantic_scholar_functions.py ....FF.....             [100%]
 
 =================================== FAILURES ===================================
 _________ TestSemanticScholarToolkit.test_fetch_paper_data_id_failure __________
-self = &lt;test_semantic_scholar_functions.TestSemanticScholarToolkit testMethod=test_fetch_paper_data_id_failure&gt;
-mock_get = &lt;MagicMock name='get' id='134648639737472'&gt;
-&gt;       self.assertIn(&quot;error&quot;, response)
+self = <test_semantic_scholar_functions.TestSemanticScholarToolkit testMethod=test_fetch_paper_data_id_failure>
+mock_get = <MagicMock name='get' id='134648639737472'>
+>       self.assertIn("error", response)
 E       AssertionError: 'error' not found in {'wrong_key': 'wrong_value'}
 
 test/toolkits/test_semantic_scholar_functions.py:110: AssertionError
 _________ TestSemanticScholarToolkit.test_fetch_paper_data_id_success __________
-self = &lt;test_semantic_scholar_functions.TestSemanticScholarToolkit testMethod=test_fetch_paper_data_id_success&gt;
-mock_get = &lt;MagicMock name='get' id='134648640270064'&gt;
-&gt;       self.assertEqual(response, mock_response_data)
+self = <test_semantic_scholar_functions.TestSemanticScholarToolkit testMethod=test_fetch_paper_data_id_success>
+mock_get = <MagicMock name='get' id='134648640270064'>
+>       self.assertEqual(response, mock_response_data)
 E       AssertionError: {'wrong_key': 'wrong_value'} != {'title': 'Paper Title by ID'}
 E       - {'wrong_key': 'wrong_value'}
 E       + {'title': 'Paper Title by ID'}
@@ -180,11 +170,9 @@ FAILED test/toolkits/test_semantic_scholar_functions.py::TestSemanticScholarTool
 FAILED test/toolkits/test_semantic_scholar_functions.py::TestSemanticScholarToolkit::test_fetch_paper_data_id_success
 =================== 2 failed, 9 passed, 5 warnings in 1.49s ====================
 ```
-
 </details>
 
-## Creator details
-
-* Name: Xinxing
-* Affiliation: Coral Protocol
-* Contact: [Discord](https://discord.com/invite/Xjm892dtt3)
+## Creator Details
+- **Name**: Xinxing
+- **Affiliation**: Coral Protocol
+- **Contact**: [Discord](https://discord.com/invite/Xjm892dtt3)
